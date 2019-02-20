@@ -10,7 +10,8 @@ public class Executor {
 //            executeMessageDigestDemo();
 //            executePrivateKeyEncryptionDemo();
 //            executePublicKeyEncryptionDemo();
-            executeCustomDigitalSignatureDemo();
+//            executeCustomDigitalSignatureDemo();
+            executeCustomDigitalSignature_MD5_RSADemo();
         } catch (Exception e) {
             e.printStackTrace();
         }
