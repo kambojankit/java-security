@@ -9,20 +9,21 @@ public class Executor {
         try {
 //            executeMessageDigestDemo();
 //            executePrivateKeyEncryptionDemo();
-            executePublicKeyEncryptionDemo();
+//            executePublicKeyEncryptionDemo();
+            executeCustomDigitalSignatureDemo();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private static void executeMessageDigestDemo() throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        MessageDigestDemo messageDigestDemo = new MessageDigestDemo();
+        CustomMessageDigest customMessageDigest = new CustomMessageDigest();
 
-        String preparedDigest1 = messageDigestDemo.generateMD5Fingerprint("This is a Test");
-        System.out.println("isValid: " +  messageDigestDemo.isMessageValid("This is a Test", preparedDigest1));
+        String preparedDigest1 = customMessageDigest.generateMD5FingerprintAsString("This is a Test");
+        System.out.println("isValid: " +  customMessageDigest.isMessageValid("This is a Test", preparedDigest1));
 
-        String preparedDigest2 = messageDigestDemo.generateMD5Fingerprint("Frecko is here again");
-        String preparedDigest3 = messageDigestDemo.generateMD5Fingerprint("Get me a bloody digest");
+        String preparedDigest2 = customMessageDigest.generateMD5FingerprintAsString("Frecko is here again");
+        String preparedDigest3 = customMessageDigest.generateMD5FingerprintAsString("Get me a bloody digest");
 
         System.out.println("Digest Created are: "  + ", " + preparedDigest1 + " , " + preparedDigest3);
 //      Why is it that the preparedDigest2 value eats up anything to be printed before. There is some issue with concatenation that needs to be looked into
@@ -68,5 +69,35 @@ public class Executor {
         System.out.println(decryptedMessage);
         System.out.println("---------------END-----------------");
         System.out.println("\n");
+    }
+
+    private static void executeCustomDigitalSignatureDemo() throws NoSuchPaddingException, NoSuchAlgorithmException, UnsupportedEncodingException {
+        String plainTextMessage = "Hey this is a sample message purely intended to test Digital Signature Demo!!";
+        CustomDigitalSignature digitalSignature = new CustomDigitalSignature();
+
+        byte[] encryptedMessage = digitalSignature.signMessage(plainTextMessage);
+        System.out.println("Signed Message is as below ... ");
+        System.out.println("-----------------------------------");
+        System.out.println(new String(encryptedMessage, "UTF8"));
+        System.out.println("---------------END-----------------");
+        System.out.println("\n");
+
+        Boolean isSignatureVerified = digitalSignature.decryptAndVerifySignedMessage(encryptedMessage, plainTextMessage);
+        System.out.println("Signature Validation was successful? " + isSignatureVerified);
+    }
+
+    private static void executeCustomDigitalSignature_MD5_RSADemo() throws NoSuchPaddingException, NoSuchAlgorithmException, UnsupportedEncodingException {
+        String plainTextMessage = "Hey this is a sample message purely intended to test Digital Signature Demo!!";
+        CustomDigitalSignature_MD5_RSA digitalSignature = new CustomDigitalSignature_MD5_RSA();
+
+        byte[] encryptedMessage = digitalSignature.signMessage(plainTextMessage);
+        System.out.println("Signed Message is as below ... ");
+        System.out.println("-----------------------------------");
+        System.out.println(new String(encryptedMessage, "UTF8"));
+        System.out.println("---------------END-----------------");
+        System.out.println("\n");
+
+        Boolean isSignatureVerified = digitalSignature.decryptAndVerifySignedMessage(encryptedMessage, plainTextMessage);
+        System.out.println("Signature Validation was successful? " + isSignatureVerified);
     }
 }

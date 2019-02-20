@@ -5,17 +5,20 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 
-public class MessageDigestDemo {
+public class CustomMessageDigest {
 
     private final String CHAR_SET = "UTF-8";
 
     private final MessageDigest messageDigest;
 
-    public MessageDigestDemo() throws NoSuchAlgorithmException {
+    public CustomMessageDigest() throws NoSuchAlgorithmException {
         messageDigest = MessageDigest.getInstance("MD5");
     }
 
-    public String generateMD5Fingerprint(String message) throws UnsupportedEncodingException {
+    public byte[] generateMD5Fingerprint(String message) throws UnsupportedEncodingException {
+        // reset digest
+        messageDigest.reset();
+
         byte[] plainText = message.getBytes(this.CHAR_SET);
 
         // Fetch the provider for the messageDigest
@@ -27,13 +30,17 @@ public class MessageDigestDemo {
 
         // fetch the prepared digest
         String mdFingerprint = new String(messageDigest.digest(), CHAR_SET);
+        System.out.println("generated digest: " + mdFingerprint);
+        return messageDigest.digest();
+    }
 
-        return mdFingerprint;
+    public String generateMD5FingerprintAsString(String message) throws UnsupportedEncodingException {
+        return new String(generateMD5Fingerprint(message), CHAR_SET);
     }
 
     public Boolean isMessageValid(String message, String actualDigest) throws UnsupportedEncodingException {
-        String expectedDigest = generateMD5Fingerprint(message);
+        byte[] expectedDigest = generateMD5Fingerprint(message);
 
-        return actualDigest.equals(expectedDigest);
+        return actualDigest.equals(new String(expectedDigest, CHAR_SET));
     }
 }

@@ -11,7 +11,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 
 @SuppressWarnings("Duplicates")
-public class PublicKeyEncryption {
+public class CustomDigitalSignature {
 
     private final String CHAR_SET = "UTF-8";
     private final String ALGO_KEY_TYPE = "RSA";
@@ -22,25 +22,37 @@ public class PublicKeyEncryption {
 
     private final KeyPair keyPair;
     private final Cipher cipher;
+    private final CustomMessageDigest messageDigest;
 
-    public PublicKeyEncryption() throws NoSuchAlgorithmException, NoSuchPaddingException {
+    public CustomDigitalSignature() throws NoSuchAlgorithmException, NoSuchPaddingException {
         this.keyPair = fetchKeyPair();
         this.cipher = Cipher.getInstance(DES_CIPHER_TYPE);
+        this.messageDigest = new CustomMessageDigest();
+
     }
 
-    public String decryptMessage(byte[] cipherText) {
+    public Boolean decryptAndVerifySignedMessage(byte[] cipherText, String originalInputMessage) throws UnsupportedEncodingException {
         try {
-            System.out.println("Starting decryption...");
+            System.out.println("Starting Signature Verification...");
 
             // initialise Cipher in Decryption mode, with the provided private key
-            cipher.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
+            cipher.init(Cipher.DECRYPT_MODE, keyPair.getPublic());
 
             // Decrypt Message
-            byte[] plainTextStream = cipher.doFinal(cipherText);
+            byte[] newMessageDigest = cipher.doFinal(cipherText);
 
-            String plainText = new String(plainTextStream, CHAR_SET);
-            System.out.println("Finished decryption");
-            return plainText;
+            // Re-generate message digest for the provided original message
+            byte[] generatedOriginalMessageDigest = this.messageDigest.generateMD5Fingerprint(originalInputMessage);
+
+            // Verify both MessageDigests are equal
+            Boolean isSignatureVerified = verifyMessageDigests(generatedOriginalMessageDigest, newMessageDigest);
+
+            System.out.println("Finished Signature Verification");
+
+
+            return isSignatureVerified;
+
+
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         } catch (BadPaddingException e) {
@@ -50,23 +62,24 @@ public class PublicKeyEncryption {
         } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
         }
-        System.out.println("Decryption Failed for the message: \n-----------------------------\n" + cipherText + "\n-----------END---------------");
+        System.out.println("Decryption Failed for the message: \n-----------------------------\n" + new String(cipherText, CHAR_SET) + "\n-----------END---------------");
         return null;
     }
 
-    public byte[] encryptMessage(String inputMessage) {
+    // encrypt the message digest with the RSA private key to create the signature
+    public byte[] signMessage(String inputMessage) {
         try {
-            byte[] plainText = inputMessage.getBytes(CHAR_SET);
+            byte[] generatedMessageDigest = extractMessageDigest(inputMessage);
 
             // initialise Cipher in Encryption mode, with the provided private key
-            cipher.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
+            cipher.init(Cipher.ENCRYPT_MODE, keyPair.getPrivate());
 
             // Encrypt plainText into encrypted message (cipher text), using the private Key
-            byte[] cipherText = cipher.doFinal(plainText);
+            byte[] cipherText = cipher.doFinal(generatedMessageDigest);
 
-            System.out.println( "Finished encryption" );
-
+            System.out.println( "Finished Signing" );
             return cipherText;
+
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {
@@ -77,8 +90,28 @@ public class PublicKeyEncryption {
             e.printStackTrace();
         }
 
-        System.out.println("Encryption Failed for the message: " + inputMessage);
+        System.out.println("Signing Failed for the message: " + inputMessage);
         return null;
+    }
+
+    private Boolean verifyMessageDigests(byte[] oldMessageDigest, byte[] newMessageDigest) {
+        int newMDLen = newMessageDigest.length;
+        if (newMDLen > oldMessageDigest.length) {
+            System.out.println( "Signature failed, length error");
+            return false;
+        }
+        for (int i = 0; i < newMDLen; ++i) {
+            if (oldMessageDigest[i] != newMessageDigest[i]) {
+                System.out.println("Signature failed, element error");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private byte[] extractMessageDigest(String inputMessage) throws UnsupportedEncodingException {
+        return this.messageDigest.generateMD5Fingerprint(inputMessage);
     }
 
     private KeyPair fetchKeyPair() throws NoSuchAlgorithmException {
