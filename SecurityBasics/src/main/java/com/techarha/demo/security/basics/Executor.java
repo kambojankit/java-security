@@ -8,8 +8,8 @@ public class Executor {
     public static void main(String[] args) {
         try {
 //            executeMessageDigestDemo();
-            executePrivateKeyEncryptionDemo();
-//            testEnryption("this is a sample message");
+//            executePrivateKeyEncryptionDemo();
+            executePublicKeyEncryptionDemo();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -44,6 +44,25 @@ public class Executor {
         System.out.println("\n");
 
         String decryptedMessage = privateKeyEncryption.decryptMessage(encryptedMessage);
+        System.out.println("Decrypted Message is as below ... ");
+        System.out.println("-----------------------------------");
+        System.out.println(decryptedMessage);
+        System.out.println("---------------END-----------------");
+        System.out.println("\n");
+    }
+
+    private static void executePublicKeyEncryptionDemo() throws NoSuchPaddingException, NoSuchAlgorithmException, UnsupportedEncodingException {
+        String plainTextMessage = "Hey this is a sample message purely intended to test Public Key encryption!!";
+        PublicKeyEncryption publicKeyEncryption= new PublicKeyEncryption();
+
+        byte[] encryptedMessage = publicKeyEncryption.encryptMessage(plainTextMessage);
+        System.out.println("Encrypted Message is as below ... ");
+        System.out.println("-----------------------------------");
+        System.out.println(new String(encryptedMessage, "UTF8"));
+        System.out.println("---------------END-----------------");
+        System.out.println("\n");
+
+        String decryptedMessage = publicKeyEncryption.decryptMessage(encryptedMessage);
         System.out.println("Decrypted Message is as below ... ");
         System.out.println("-----------------------------------");
         System.out.println(decryptedMessage);
